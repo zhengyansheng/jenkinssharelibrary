@@ -3,8 +3,8 @@
 @Library('shareLibrary') _
 
 def hello = new ops.hello()
-def serviceName = "micro-product-go"
-def repoUrl = "https://github.com/shadowshot-x/micro-product-go/"  // 仓库地址变量
+def serviceName = "httpserver"
+def repoUrl = "https://github.com/zhengyansheng/httpserver.git"  // 仓库地址变量
 
 //String workspace = "/opt/jenkins/workspace"
 
