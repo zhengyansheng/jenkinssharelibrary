@@ -52,8 +52,6 @@ pipeline {
         // 克隆代码
         stage("git checkout") {
             steps {
-                echo "git checkout '${params.branch}'"
-
                 script {
                     def git = new ops.git()
                     git.CheckoutCode(repoUrl, "${params.branch}")
@@ -92,6 +90,10 @@ pipeline {
             steps {
                 echo '部署镜像'
                 sh 'echo $action, $branch, $env'
+
+                def deploy = new ops.deploy()
+                deploy.DeployToCluster(env, params.codeType, serviceName)
+
             }
         }
     }
