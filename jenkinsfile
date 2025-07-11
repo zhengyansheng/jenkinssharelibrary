@@ -18,7 +18,7 @@ pipeline {
     }
 
     parameters {
-        choice(name: 'action', choices: ['构建', '打包', '发版', '回滚'], description: '操作的指令')
+        choice(name: 'action', choices: ['构建', '打包', '部署', '回滚'], description: '操作的指令')
         choice(name: 'branch', choices: ['dev', 'qa', 'uat', 'master', 'main'], description: '分支或Tag名称')
         choice(name: 'env', choices: ['dev', 'test', 'test2', 'test3', 'uat', 'prod'], description: '运行的环境')
         choice(name: 'codeType', choices: ['java', 'nodejs', 'common', 'go', 'python'], description: '代码类型')
@@ -30,25 +30,25 @@ pipeline {
 
     stages {
 
-        stage('pre build') {
+        stage('init') {
             when {
                 expression { params.action == '构建' }
             }
             steps {
+                echo "-------------------------------初始化准备工作------------------------------"
                 script {
-                    echo "-------------------------------准备工作------------------------------"
-                    def startTime = System.currentTimeMillis()
-                    writeFile file: 'build_start_time.txt', text: "${startTime}"
-                    echo "构建开始时间（毫秒）已记录: ${startTime}"
+                    def init = new ops.init()
+                    init.Init()
                 }
             }
         }
 
-        stage('git checkout') {
+        stage('checkout') {
             when {
                 expression { params.action == '构建' }
             }
             steps {
+                echo "-------------------------------克隆代码------------------------------"
                 script {
                     def git = new ops.git()
                     git.CheckoutCode(repoUrl, "${params.branch}")
@@ -62,9 +62,10 @@ pipeline {
             }
             steps {
                 echo "$serviceName"
+                echo "-------------------------------构建------------------------------"
                 script {
                     def build = new ops.build()
-                    build.CodeTypeMain(env, params.codeType, serviceName)
+                    build.CodeTypeMain(params.env, params.codeType, serviceName)
                 }
             }
         }
@@ -74,9 +75,11 @@ pipeline {
                 expression { params.action == '打包' }
             }
             steps {
-                echo '打包推送镜像'
-                def pack = new ops.pack()
-                pack.BuildImage(env, params.codeType, serviceName)
+                echo "-------------------------------打包------------------------------"
+                script {
+                    def pack = new ops.pack()
+                    pack.BuildImage(params.env, params.codeType, serviceName)
+                }
             }
         }
 
@@ -85,10 +88,10 @@ pipeline {
                 expression { params.action == '发版' }
             }
             steps {
-                echo '部署镜像'
+                echo "-------------------------------部署------------------------------"
                 script {
                     def deploy = new ops.deploy()
-                    deploy.DeployToCluster(env, params.codeType, serviceName)
+                    deploy.DeployToCluster(params.env, params.codeType, serviceName)
                 }
             }
         }
@@ -98,10 +101,10 @@ pipeline {
                 expression { params.action == '回滚' }
             }
             steps {
-                echo '回滚'
+                echo "-------------------------------回滚------------------------------"
                 script {
                     def deploy = new ops.deploy()
-                    deploy.RollbackFromCluster(env, params.codeType, serviceName)
+                    deploy.RollbackFromCluster(params.env, params.codeType, serviceName)
                 }
             }
         }
