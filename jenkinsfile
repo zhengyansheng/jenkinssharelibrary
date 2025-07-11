@@ -4,13 +4,9 @@
 
 def hello = new ops.hello()
 def serviceName = "httpserver"
-def repoUrl = "https://github.com/zhengyansheng/httpserver.git"  // 仓库地址变量
+def repoUrl = "https://github.com/zhengyansheng/httpserver.git"
 
-//String workspace = "/opt/jenkins/workspace"
-
-// Pipeline
 pipeline {
-    // 指定运行的节点
     agent any
 
     tools {
@@ -18,11 +14,10 @@ pipeline {
     }
 
     options {
-        timestamps()                        // 日志行添加时间
-        timeout(time: 30, unit: 'MINUTES')  // build timeout 整个流水线的超时时间
+        timestamps()
+        timeout(time: 30, unit: 'MINUTES')
     }
 
-    // 参数
     parameters {
         choice(name: 'action', choices: ['构建', '打包', '发版', '回滚'], description: '操作的指令')
         choice(name: 'branch', choices: ['dev', 'qa', 'uat', 'master', 'main'], description: '分支或Tag名称')
@@ -30,27 +25,30 @@ pipeline {
         choice(name: 'codeType', choices: ['java', 'nodejs', 'common', 'go', 'python'], description: '代码类型')
     }
 
-    // 环境变量
     environment {
         GOPROXY = 'https://goproxy.io,direct'
     }
 
     stages {
-        // 执行前的预处理
+
         stage('pre build') {
+            when {
+                expression { params.action == '构建' }
+            }
             steps {
                 script {
                     def startTime = System.currentTimeMillis()
                     writeFile file: 'build_start_time.txt', text: "${startTime}"
                     echo "构建开始时间（毫秒）已记录: ${startTime}"
-
                     hello.Hello()
                 }
             }
         }
 
-        // 克隆代码
-        stage("git checkout") {
+        stage('git checkout') {
+            when {
+                expression { params.action == '构建' }
+            }
             steps {
                 script {
                     def git = new ops.git()
@@ -59,11 +57,12 @@ pipeline {
             }
         }
 
-        // 构建
-        stage("build") {
+        stage('build') {
+            when {
+                expression { params.action == '构建' }
+            }
             steps {
                 echo "$serviceName"
-
                 script {
                     def build = new ops.build()
                     build.CodeTypeMain(env, params.codeType, serviceName)
@@ -71,36 +70,43 @@ pipeline {
             }
         }
 
-        // 扫描
-        stage("scan code") {
+        stage('scan code') {
+            when {
+                expression { params.action == '构建' }
+            }
             steps {
                 echo '扫描代码'
             }
         }
 
-        // 打包和推送
-        stage("pack") {
+        stage('pack') {
+            when {
+                expression { params.action == '打包' }
+            }
             steps {
                 echo '打包推送镜像'
+                // 你可以调用具体的打包逻辑，比如:
+                // def pack = new ops.pack()
+                // pack.BuildImage(...)
             }
         }
 
-        // 部署
-        stage("deploy") {
+        stage('deploy') {
+            when {
+                expression { params.action == '发版' }
+            }
             steps {
                 echo '部署镜像'
                 sh 'echo $action, $branch, $env'
-
-                def deploy = new ops.deploy()
-                deploy.DeployToCluster(env, params.codeType, serviceName)
-
+                script {
+                    def deploy = new ops.deploy()
+                    deploy.DeployToCluster(env, params.codeType, serviceName)
+                }
             }
         }
     }
 
-   post {
-        // currentBuild 全局变量
-
+    post {
         always {
             script {
                 try {
@@ -131,5 +137,5 @@ pipeline {
         aborted {
             echo '❌ Pipeline 执行终止，请检查日志。'
         }
-   }
+    }
 }

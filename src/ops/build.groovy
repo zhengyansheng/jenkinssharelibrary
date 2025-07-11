@@ -74,11 +74,11 @@ def runCodeTypeCommon(serviceName) {
 
 def runCodeTypeGo(env, serviceName) {
     echo "开始 Go 构建: ${serviceName}"
-    sh '''
+    sh """
         ls -l
         go mod tidy
         go build -o ${serviceName} main.go
-    '''
+    """
 }
 
 def runCodeTypePython(env, serviceName) {
