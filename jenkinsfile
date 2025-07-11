@@ -2,7 +2,6 @@
 
 @Library('shareLibrary') _
 
-def hello = new ops.hello()
 def serviceName = "httpserver"
 def repoUrl = "https://github.com/zhengyansheng/httpserver.git"
 
@@ -37,10 +36,10 @@ pipeline {
             }
             steps {
                 script {
+                    echo "-------------------------------准备工作------------------------------"
                     def startTime = System.currentTimeMillis()
                     writeFile file: 'build_start_time.txt', text: "${startTime}"
                     echo "构建开始时间（毫秒）已记录: ${startTime}"
-                    hello.Hello()
                 }
             }
         }
@@ -70,24 +69,14 @@ pipeline {
             }
         }
 
-        stage('scan code') {
-            when {
-                expression { params.action == '构建' }
-            }
-            steps {
-                echo '扫描代码'
-            }
-        }
-
         stage('pack') {
             when {
                 expression { params.action == '打包' }
             }
             steps {
                 echo '打包推送镜像'
-                // 你可以调用具体的打包逻辑，比如:
-                // def pack = new ops.pack()
-                // pack.BuildImage(...)
+                def pack = new ops.pack()
+                pack.BuildImage(env, params.codeType, serviceName)
             }
         }
 
@@ -97,10 +86,22 @@ pipeline {
             }
             steps {
                 echo '部署镜像'
-                sh 'echo $action, $branch, $env'
                 script {
                     def deploy = new ops.deploy()
                     deploy.DeployToCluster(env, params.codeType, serviceName)
+                }
+            }
+        }
+
+        stage('rollback') {
+            when {
+                expression { params.action == '回滚' }
+            }
+            steps {
+                echo '回滚'
+                script {
+                    def deploy = new ops.deploy()
+                    deploy.RollbackFromCluster(env, params.codeType, serviceName)
                 }
             }
         }
@@ -119,7 +120,7 @@ pipeline {
                     def minutes = (seconds / 60).toInteger()
                     def remainingSeconds = seconds % 60
 
-                    echo "⏱️ 构建耗时：${minutes} 分 ${remainingSeconds} 秒（共 ${durationMillis} 毫秒）"
+                    echo "构建耗时：${minutes} 分 ${remainingSeconds} 秒（共 ${durationMillis} 毫秒）"
                 } catch (Exception e) {
                     echo "⚠️ 计算耗时失败: ${e.message}"
                 }
@@ -131,11 +132,11 @@ pipeline {
         }
 
         failure {
-            echo '❌ Pipeline 执行失败，请检查日志。'
+            echo '❌ Pipeline 执行失败。'
         }
 
         aborted {
-            echo '❌ Pipeline 执行终止，请检查日志。'
+            echo '❌ Pipeline 执行终止。'
         }
     }
 }
