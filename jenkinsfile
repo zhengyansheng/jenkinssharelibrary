@@ -64,6 +64,8 @@ pipeline {
         // 构建
         stage("build") {
             steps {
+                echo "$serviceName"
+
                 script {
                     def build = new ops.build()
                     build.CodeTypeMain(env, params.codeType, serviceName)
