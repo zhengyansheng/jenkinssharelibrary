@@ -2,7 +2,7 @@
 
 package src
 
-def Init(namespace, serviceName, imageTag) {
+def Init() {
 
     def startTime = System.currentTimeMillis()
     writeFile file: 'build_start_time.txt', text: "${startTime}"
