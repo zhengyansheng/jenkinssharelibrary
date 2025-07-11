@@ -2,6 +2,7 @@
 
 package src
 
+// CheckoutCode 克隆代码
 def CheckoutCode(gitUrl, branch) {
     // Clean workspace before checking out code
     deleteDir()
@@ -11,3 +12,4 @@ def CheckoutCode(gitUrl, branch) {
         branches: [[name: branch]]
     )
 }
+

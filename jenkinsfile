@@ -3,7 +3,8 @@
 @Library('shareLibrary') _
 
 def hello = new ops.hello()
-def git = new ops.git()
+def serviceName = "micro-product-go"
+def repoUrl = "https://github.com/shadowshot-x/micro-product-go/"  // 仓库地址变量
 
 //String workspace = "/opt/jenkins/workspace"
 
@@ -26,6 +27,7 @@ pipeline {
         choice(name: 'action', choices: ['构建', '打包', '发版', '回滚'], description: '操作的指令')
         choice(name: 'branch', choices: ['dev', 'qa', 'uat', 'master'], description: '分支或Tag名称')
         choice(name: 'env', choices: ['dev', 'test', 'test2', 'test3', 'uat', 'prod'], description: '运行的环境')
+        choice(name: 'codeType', choices: ['java', 'nodejs', 'common', 'go', 'python'], description: '代码类型')
     }
 
     // 环境变量
@@ -51,23 +53,21 @@ pipeline {
         stage("git checkout") {
             steps {
                 echo "git checkout '${params.branch}'"
-                git.CheckoutCode("https://github.com/shadowshot-x/micro-product-go/", "${params.branch}")
-//                 checkout([
-//                     $class: 'GitSCM',
-//                     branches: [[name: "*/${params.branch}"]],
-//                     userRemoteConfigs: [[
-//                         url: 'https://github.com/shadowshot-x/micro-product-go/',
-//                     ]]
-//                 ])
+
+                script {
+                    def git = new ops.git()
+                    git.CheckoutCode(repoUrl, "${params.branch}")
+                }
             }
         }
 
         // 构建
         stage("build") {
             steps {
-                echo '单元测试'
-                sh 'go test ./...'
-                sh 'ls -l'
+                script {
+                    def build = new ops.build()
+                    build.CodeTypeMain(env, params.codeType, serviceName)
+                }
             }
         }
 
