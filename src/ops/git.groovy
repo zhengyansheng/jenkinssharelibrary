@@ -2,7 +2,7 @@
 
 package src
 
-def checkoutCode(gitUrl, branch) {
+def CheckoutCode(gitUrl, branch) {
     // Clean workspace before checking out code
     deleteDir()
     checkout scmGit(

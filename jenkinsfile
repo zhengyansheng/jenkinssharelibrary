@@ -51,7 +51,7 @@ pipeline {
         stage("git checkout") {
             steps {
                 echo "git checkout '${params.branch}'"
-                git.checkoutCode('https://github.com/shadowshot-x/micro-product-go/', "${params.branch}")
+                git.CheckoutCode("https://github.com/shadowshot-x/micro-product-go/", "${params.branch}")
 //                 checkout([
 //                     $class: 'GitSCM',
 //                     branches: [[name: "*/${params.branch}"]],
