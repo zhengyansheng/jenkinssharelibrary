@@ -44,9 +44,9 @@ def runCodeTypeCommon(serviceName) {
 
 def runCodeTypeGo(env, serviceName) {
     echo "开始 Go 构建: ${serviceName}"
-    script {
-        sh "go build -o ${serviceName} main.go"
-    }
+    sh "ls -l" // 可选，调试用，查看当前目录内容
+    sh "go mod tidy" // 确保依赖拉取
+    sh "go build -o ${serviceName} main.go"
 }
 
 def runCodeTypePython(env, serviceName) {

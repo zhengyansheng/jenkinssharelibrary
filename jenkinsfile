@@ -25,7 +25,7 @@ pipeline {
     // 参数
     parameters {
         choice(name: 'action', choices: ['构建', '打包', '发版', '回滚'], description: '操作的指令')
-        choice(name: 'branch', choices: ['dev', 'qa', 'uat', 'master'], description: '分支或Tag名称')
+        choice(name: 'branch', choices: ['dev', 'qa', 'uat', 'master', 'main'], description: '分支或Tag名称')
         choice(name: 'env', choices: ['dev', 'test', 'test2', 'test3', 'uat', 'prod'], description: '运行的环境')
         choice(name: 'codeType', choices: ['java', 'nodejs', 'common', 'go', 'python'], description: '代码类型')
     }
