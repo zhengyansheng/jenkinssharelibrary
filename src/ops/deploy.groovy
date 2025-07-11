@@ -11,9 +11,9 @@ def DeployToCluster(namespace, serviceName, imageTag) {
     """
 
     // 方式 官方文档 https://www.jenkins.io/doc/pipeline/steps/kubernetes-cli/#wrapclass-kubectlbuildwrapper-configure-kubernetes-cli-kubectl-deprecated-use-the-multi-credentials-one-instead
-    withKubeConfig([credentialsId: 'user1', serverUrl: 'https://api.k8s.my-company.com']) {
-      sh 'kubectl apply -f my-kubernetes-directory'
-    }
+    // withKubeConfig([credentialsId: 'user1', serverUrl: 'https://api.k8s.my-company.com']) {
+    //   sh 'kubectl apply -f my-kubernetes-directory'
+    // }
 }
 
 
